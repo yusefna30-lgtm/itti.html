@@ -107,16 +107,16 @@
     .metric-val { font-size: 1.25rem; font-weight: 900; color: var(--itti-yellow); font-family: 'Space Mono', monospace; }
     .metric-lbl { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
 
-    /* أزرار التوثيق المزدوجة */
+    /* شبكة أزرار التوثيق الثلاثية (كاميرا / فيديو حي / ألبوم) */
     .action-buttons-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
     }
     .match-action-banner {
       background: linear-gradient(135deg, var(--itti-yellow), #e0a800);
       border-radius: 14px;
-      padding: 12px 10px;
+      padding: 12px 6px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -127,17 +127,24 @@
       text-align: center;
       gap: 4px;
     }
+    .match-action-banner.video-btn {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      box-shadow: 0 6px 18px rgba(225, 29, 72, 0.35);
+    }
+    .match-action-banner.video-btn .banner-text-title { color: #fff; }
+    .match-action-banner.video-btn .banner-text-sub { color: rgba(255,255,255,0.8); }
+
     .match-action-banner.secondary {
       background: var(--itti-card);
       border: 1.5px solid var(--itti-yellow);
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
-    .match-action-banner:active { transform: scale(0.97); }
-    .banner-text-title { font-size: 0.88rem; font-weight: 900; color: #000; }
+    .match-action-banner:active { transform: scale(0.96); }
+    .banner-text-title { font-size: 0.8rem; font-weight: 900; color: #000; }
     .secondary .banner-text-title { color: var(--itti-yellow); }
-    .banner-text-sub { font-size: 0.62rem; color: rgba(0,0,0,0.75); font-weight: 700; }
+    .banner-text-sub { font-size: 0.58rem; color: rgba(0,0,0,0.75); font-weight: 700; }
     .secondary .banner-text-sub { color: var(--muted); }
-    .banner-icon { font-size: 1.6rem; }
+    .banner-icon { font-size: 1.45rem; }
 
     /* حائط ومدرج المباريات الموثقة */
     .timeline-title-row {
@@ -160,9 +167,9 @@
       flex-direction: column;
       position: relative;
     }
-    .match-card-photo {
+    .match-card-media {
       width: 100%;
-      height: 180px;
+      height: 190px;
       object-fit: cover;
       background: #000;
     }
@@ -212,12 +219,12 @@
       justify-content: center;
       font-size: 0.8rem;
       cursor: pointer;
+      z-index: 5;
     }
 
-    /* استوديو المعاينة والمشاركة */
+    /* استوديو التعديل والتصدير */
     #editSection { display: none; flex-direction: column; gap: 12px; }
 
-    /* تبديل عرض المعاينة */
     .view-toggle-row { display: flex; gap: 8px; }
     .btn-chip {
       background: rgba(255,255,255,0.06);
@@ -244,7 +251,7 @@
       box-shadow: 0 12px 35px rgba(0,0,0,0.9);
       user-select: none;
     }
-    #storyImg { width: 100%; height: 100%; object-fit: cover; }
+    #storyImg, #storyVideo { width: 100%; height: 100%; object-fit: cover; }
     
     .story-top-badge {
       position: absolute;
@@ -313,8 +320,8 @@
     .ticket-brand { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 900; color: var(--itti-yellow); }
     .ticket-pill { font-size: 0.65rem; color: #fff; border: 1px solid var(--itti-yellow); padding: 1px 6px; border-radius: 8px; }
 
-    .ticket-img-container { width: 100%; height: 210px; background: #000; overflow: hidden; }
-    #ticketPreviewImg { width: 100%; height: 100%; object-fit: cover; }
+    .ticket-media-container { width: 100%; height: 210px; background: #000; overflow: hidden; position: relative; }
+    #ticketPreviewImg, #ticketPreviewVideo { width: 100%; height: 100%; object-fit: cover; }
 
     .ticket-mid-bar {
       display: flex;
@@ -388,7 +395,7 @@
     }
     .editor-input:focus { border-color: var(--itti-yellow); }
 
-    /* أزرار الإجراء الشاملة */
+    /* أزرار الإجراء */
     .action-btn-row { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
     .main-btn {
       border: none;
@@ -452,21 +459,32 @@
     </div>
   </div>
 
-  <!-- أزرار التوثيق المزدوجة (كاميرا فورية + استوديو) -->
+  <!-- أزرار التوثيق الثلاثية: كاميرا / فيديو حي / ألبوم -->
   <div class="action-buttons-grid" id="actionButtonsRow">
+    
+    <!-- 1: كاميرا صور فورية -->
     <label class="match-action-banner" for="cameraDirectInput">
       <div class="banner-icon">📸</div>
-      <div class="banner-text-title">الكاميرا الآن</div>
-      <div class="banner-text-sub">فتح عدسة التصوير فوراً</div>
+      <div class="banner-text-title">الكاميرا</div>
+      <div class="banner-text-sub">التقاط صورة</div>
     </label>
-    <input type="file" accept="image/*" capture="environment" id="cameraDirectInput" style="display:none;" onchange="handleMatchPhoto(event)">
+    <input type="file" accept="image/*" capture="environment" id="cameraDirectInput" style="display:none;" onchange="handleMatchFile(event, 'image')">
 
+    <!-- 2: فيديو مدرج حي (Live Clip) -->
+    <label class="match-action-banner video-btn" for="videoDirectInput">
+      <div class="banner-icon">🎥</div>
+      <div class="banner-text-title">فيديو حي</div>
+      <div class="banner-text-sub">لقطة مدرج (5ث)</div>
+    </label>
+    <input type="file" accept="video/*" capture="environment" id="videoDirectInput" style="display:none;" onchange="handleMatchFile(event, 'video')">
+
+    <!-- 3: اختيار من ألبوم الصور -->
     <label class="match-action-banner secondary" for="galleryDirectInput">
       <div class="banner-icon">🖼️</div>
-      <div class="banner-text-title">ألبوم الصور</div>
-      <div class="banner-text-sub">رفع لقطة من الاستوديو</div>
+      <div class="banner-text-title">الاستوديو</div>
+      <div class="banner-text-sub">رفع ملف محفوظ</div>
     </label>
-    <input type="file" accept="image/*" id="galleryDirectInput" style="display:none;" onchange="handleMatchPhoto(event)">
+    <input type="file" accept="image/*,video/*" id="galleryDirectInput" style="display:none;" onchange="handleMatchFile(event, 'auto')">
   </div>
 
   <!-- حائط مباريات الموسم -->
@@ -477,14 +495,13 @@
 
   <div class="matches-feed" id="matchesFeed">
     <div style="text-align:center; padding:30px 10px; color:var(--muted); font-size:0.8rem; border:1px dashed var(--border); border-radius:12px;">
-      لم توثق أي مباراة بالقميص حتى الآن.<br>اضغط على أحد أزرار التوثيق بالأعلى لتسجيل حضورك الأول! 🟡⚫
+      لم توثق أي مباراة بالقميص حتى الآن.<br>اختر الكاميرا أو الفيديو الحي بالأعلى لتسجيل حضورك الأول! 🟡⚫
     </div>
   </div>
 
   <!-- شاشة الاستوديو والتعديل -->
   <div id="editSection">
     
-    <!-- أزرار تبديل المعاينة -->
     <div class="view-toggle-row">
       <button class="btn-chip active" id="btnToggleTicket" onclick="toggleViewMode('ticket')">🎫 معاينة تذكرة المباراة</button>
       <button class="btn-chip" id="btnToggleStory" onclick="toggleViewMode('story')">📱 معاينة الستوري الكامل</button>
@@ -497,8 +514,9 @@
         <div class="ticket-pill">MATCHDAY</div>
       </div>
 
-      <div class="ticket-img-container">
-        <img id="ticketPreviewImg" src="" alt="لقطة الملعب">
+      <div class="ticket-media-container">
+        <img id="ticketPreviewImg" src="" alt="لقطة الملعب" style="display:none;">
+        <video id="ticketPreviewVideo" src="" autoplay loop muted playsinline style="display:none;"></video>
       </div>
 
       <div class="ticket-mid-bar">
@@ -555,7 +573,8 @@
 
     <!-- 2. قالب الستوري الكامل (9:16) -->
     <div class="story-canvas-box" id="storyBox" style="display:none;">
-      <img id="storyImg" src="" alt="لقطة الستوري">
+      <img id="storyImg" src="" alt="لقطة الستوري" style="display:none;">
+      <video id="storyVideo" src="" autoplay loop muted playsinline style="display:none;"></video>
       <div class="story-top-badge">
         <span>🐅 ITTIHAD MATCHDAY</span>
       </div>
@@ -563,7 +582,7 @@
         <div class="story-versus-title" id="storyVersusTitle">الاتحاد ضد النصر</div>
         <div class="story-meta-row">
           <span id="storyStadiumText">🏟️ الجوهرة المشعة</span>
-          <span id="storyScoreText" style="color:var(--win);">نتيجة المباراة: 2 - 1</span>
+          <span id="storyScoreText" style="color:var(--win);">النتيجة: 2 - 1 (فوز 🏆)</span>
         </div>
       </div>
     </div>
@@ -591,17 +610,14 @@
         <span>☁️ حفظ المباراة في قميص المدرج</span>
       </button>
 
-      <!-- زر الستوري المباشر -->
       <button class="main-btn story" onclick="exportVisual('story')">
         <span>🚀 نشر بطاقة الستوري الكاملة (سناب / إنستا)</span>
       </button>
 
-      <!-- زر تذكرة المباراة الذهبية -->
       <button class="main-btn ticket" onclick="exportVisual('ticket')">
         <span>🎫 مشاركة تذكرة المباراة الذهبية</span>
       </button>
 
-      <!-- زر واتساب المباشر -->
       <button class="main-btn whatsapp" onclick="exportVisual('whatsapp')">
         <span>💬 إرسال عبر واتساب</span>
       </button>
@@ -671,41 +687,78 @@
 <script>
   const OWNER_PIN = "1976";
   const STORAGE_KEY = "ITTI_FAN_MATCHES_APP_V2";
-  let capturedBase64 = "";
+  
+  let currentMediaType = "image"; // 'image' or 'video'
+  let capturedMediaSrc = "";
+  let capturedPosterBase64 = "";
 
-  function handleMatchPhoto(event) {
+  function handleMatchFile(event, forcedType) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const img = new Image();
+    const isVid = forcedType === 'video' || file.type.startsWith('video');
+    currentMediaType = isVid ? 'video' : 'image';
+
     const reader = new FileReader();
     reader.onload = function(e) {
-      img.src = e.target.result;
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const maxDim = 900;
-        let w = img.width, h = img.height;
-        if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
-        else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        capturedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+      capturedMediaSrc = e.target.result;
 
-        document.getElementById('ticketPreviewImg').src = capturedBase64;
-        document.getElementById('storyImg').src = capturedBase64;
+      const imgEl = document.getElementById('ticketPreviewImg');
+      const vidEl = document.getElementById('ticketPreviewVideo');
+      const sImgEl = document.getElementById('storyImg');
+      const sVidEl = document.getElementById('storyVideo');
 
-        // إخفاء الأزرار وعرض الاستوديو
-        document.getElementById('actionButtonsRow').style.display = 'none';
-        document.getElementById('feedHeader').style.display = 'none';
-        document.getElementById('matchesFeed').style.display = 'none';
-        document.getElementById('editSection').style.display = 'flex';
+      if (isVid) {
+        imgEl.style.display = 'none';
+        sImgEl.style.display = 'none';
+        vidEl.style.display = 'block';
+        sVidEl.style.display = 'block';
 
-        const now = new Date();
-        document.getElementById('displayDate').innerText = now.toLocaleDateString('en-GB');
+        vidEl.src = capturedMediaSrc;
+        sVidEl.src = capturedMediaSrc;
 
-        syncInputs();
-      };
+        // التقاط أول فريم كصورة ثابتة للتصدير السريع
+        vidEl.onloadeddata = function() {
+          const c = document.createElement('canvas');
+          c.width = vidEl.videoWidth || 640;
+          c.height = vidEl.videoHeight || 480;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(vidEl, 0, 0, c.width, c.height);
+          capturedPosterBase64 = c.toDataURL('image/jpeg', 0.82);
+        };
+      } else {
+        vidEl.style.display = 'none';
+        sVidEl.style.display = 'none';
+        imgEl.style.display = 'block';
+        sImgEl.style.display = 'block';
+
+        // ضغط الصورة
+        const tempImg = new Image();
+        tempImg.src = capturedMediaSrc;
+        tempImg.onload = function() {
+          const c = document.createElement('canvas');
+          const maxDim = 900;
+          let w = tempImg.width, h = tempImg.height;
+          if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
+          else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(tempImg, 0, 0, w, h);
+          capturedPosterBase64 = c.toDataURL('image/jpeg', 0.82);
+          imgEl.src = capturedPosterBase64;
+          sImgEl.src = capturedPosterBase64;
+        };
+      }
+
+      document.getElementById('actionButtonsRow').style.display = 'none';
+      document.getElementById('feedHeader').style.display = 'none';
+      document.getElementById('matchesFeed').style.display = 'none';
+      document.getElementById('editSection').style.display = 'flex';
+
+      const now = new Date();
+      document.getElementById('displayDate').innerText = now.toLocaleDateString('en-GB');
+
+      syncInputs();
     };
     reader.readAsDataURL(file);
   }
@@ -736,7 +789,6 @@
     const stn = document.getElementById('inStand').value.trim() || "الواجهة";
     const res = document.getElementById('inResult').value;
 
-    // تحديث التذكرة
     document.getElementById('displayOpponent').innerText = opp;
     document.getElementById('displayStadium').innerText = std;
     document.getElementById('displayScore').innerText = scr;
@@ -747,7 +799,6 @@
     document.getElementById('displayResult').style.color = isWin ? 'var(--win)' : (res.includes('تعادل') ? 'var(--itti-yellow)' : 'var(--danger)');
     document.getElementById('displayScore').style.color = isWin ? 'var(--win)' : '#fff';
 
-    // تحديث الستوري
     document.getElementById('storyVersusTitle').innerText = `الاتحاد ضد ${opp}`;
     document.getElementById('storyStadiumText').innerText = `🏟️ ${std}`;
     document.getElementById('storyScoreText').innerText = `النتيجة: ${scr} (${res})`;
@@ -767,7 +818,9 @@
       stand: document.getElementById('inStand').value.trim() || "المدرج",
       result: document.getElementById('inResult').value,
       date: new Date().toLocaleDateString('ar-SA'),
-      image: capturedBase64
+      mediaType: currentMediaType,
+      image: capturedPosterBase64,
+      videoSrc: currentMediaType === 'video' ? capturedMediaSrc : ""
     };
 
     try {
@@ -843,7 +896,7 @@
     if (list.length === 0) {
       feed.innerHTML = `
         <div style="text-align:center; padding:30px 10px; color:var(--muted); font-size:0.8rem; border:1px dashed var(--border); border-radius:12px;">
-          لم توثق أي مباراة بالقميص حتى الآن.<br>اضغط على أحد أزرار التوثيق بالأعلى لتسجيل حضورك الأول! 🟡⚫
+          لم توثق أي مباراة بالقميص حتى الآن.<br>اختر الكاميرا أو الفيديو الحي بالأعلى لتسجيل حضورك الأول! 🟡⚫
         </div>`;
       return;
     }
@@ -852,9 +905,15 @@
       const isWin = item.result && item.result.includes('فوز');
       const card = document.createElement('div');
       card.className = "match-card";
+
+      let mediaHtml = `<img class="match-card-media" src="${item.image}" alt="مباراة الاتحاد">`;
+      if (item.mediaType === 'video' && item.videoSrc) {
+        mediaHtml = `<video class="match-card-media" src="${item.videoSrc}" autoplay loop muted playsinline poster="${item.image}"></video>`;
+      }
+
       card.innerHTML = `
         <button class="match-delete-btn" onclick="deleteMatch(${idx}, '${item.id || ''}')">✕</button>
-        <img class="match-card-photo" src="${item.image}" alt="مباراة الاتحاد">
+        ${mediaHtml}
         <div class="match-card-body">
           <div class="match-versus-row">
             <div>الاتحاد ضد ${item.opponent}</div>
@@ -870,7 +929,6 @@
     });
   }
 
-  // دالة التصدير الموحدة للستوري والتذكرة والواتساب
   async function exportVisual(targetMode) {
     let elementToCapture = document.getElementById('ticketBox');
     let prefix = 'ITTIHAD-TICKET';
@@ -893,7 +951,6 @@
         const scr = document.getElementById('inScore').value || '2 - 1';
 
         if (targetMode === 'whatsapp') {
-          // مشاركة عبر واتساب
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
@@ -908,7 +965,6 @@
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`📍 من قلب مدرج الذهب: الاتحاد ضد ${opp} (${scr}) 🟡⚫`)}`, '_blank');
           }
         } else {
-          // مشاركة ستوري أو تذكرة عادية
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
@@ -931,9 +987,12 @@
 
   function cancelEdit() {
     document.getElementById('cameraDirectInput').value = "";
+    document.getElementById('videoDirectInput').value = "";
     document.getElementById('galleryDirectInput').value = "";
     document.getElementById('ticketPreviewImg').src = "";
+    document.getElementById('ticketPreviewVideo').src = "";
     document.getElementById('storyImg').src = "";
+    document.getElementById('storyVideo').src = "";
     document.getElementById('editSection').style.display = 'none';
     document.getElementById('actionButtonsRow').style.display = 'grid';
     document.getElementById('feedHeader').style.display = 'flex';
