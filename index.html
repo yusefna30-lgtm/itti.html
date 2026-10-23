@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>مدرج الذهب | سجل مشجع العميد التفاعلي</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #08090b;
+      --card-bg: rgba(18, 20, 24, 0.96);
+      --itti-yellow: #f5c400;
+      --itti-gold: #d4af37;
+      --text: #f0f3f8;
+      --muted: #8b939e;
+      --border: #232730;
+      --danger: #ef4444;
+      --win: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background-image: radial-gradient(circle at 50% 0%, #1c1a0e 0%, var(--bg) 85%);
+    }
+    .app-container { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 12px; }
+
+    header { text-align: center; padding: 4px 0 8px; border-bottom: 1px solid var(--border); }
+    .badge { display: inline-block; padding: 2px 10px; border: 1px solid var(--itti-yellow); border-radius: 20px; color: var(--itti-yellow); font-size: 0.65rem; font-weight: bold; letter-spacing: 1.5px; margin-bottom: 4px; }
+    h1 { font-size: 1.3rem; color: #fff; }
+    p.sub { font-size: 0.75rem; color: var(--muted); }
+
+    /* بطاقة عضوية المشجع */
+    .membership-card {
+      background: linear-gradient(135deg, rgba(245, 196, 0, 0.12), rgba(0,0,0,0.6));
+      border: 1px solid rgba(245, 196, 0, 0.35);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .fan-title { font-size: 0.95rem; font-weight: 900; color: var(--itti-yellow); }
+    .fan-tag { font-size: 0.65rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+    .nfc-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      background: rgba(245, 196, 0, 0.15);
+      border: 1px solid var(--itti-yellow);
+      border-radius: 14px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--itti-yellow);
+    }
+
+    /* إحصائيات المدرج */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .stat-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 4px;
+      text-align: center;
+    }
+    .stat-val { font-size: 1rem; font-weight: 900; color: var(--itti-yellow); }
+    .stat-lbl { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+
+    /* خريطة الملاعب */
+    .map-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .map-header {
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.5);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--itti-yellow);
+      font-weight: bold;
+    }
+    #map { width: 100%; height: 215px; background: #15181e; }
+
+    /* أزرار التوثيق */
+    .capture-row { display: flex; gap: 10px; width: 100%; }
+    .capture-box {
+      flex: 1;
+      background: var(--card-bg);
+      border: 2px dashed var(--itti-yellow);
+      border-radius: 14px;
+      padding: 16px 8px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    .capture-box:active { background: rgba(245, 196, 0, 0.12); transform: scale(0.98); }
+    .camera-icon { font-size: 1.8rem; }
+    .capture-btn-label { font-size: 0.88rem; font-weight: bold; color: var(--itti-yellow); }
+    .capture-sub { font-size: 0.68rem; color: var(--muted); }
+
+    /* أرشيف المباريات */
+    .archive-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .archive-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: bold; color: var(--itti-yellow); }
+    .archive-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 6px 2px 8px; }
+    .archive-card {
+      min-width: 125px;
+      max-width: 125px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .archive-thumb { width: 100%; height: 110px; object-fit: cover; }
+    .archive-info { padding: 6px; font-size: 0.7rem; text-align: right; }
+    .archive-loc { font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .archive-date { color: var(--muted); font-size: 0.6rem; margin-top: 2px; }
+
+    .card-delete-btn {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: rgba(0,0,0,0.75);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      cursor: pointer;
+      z-index: 5;
+    }
+
+    /* استوديو تذكرة المباراة الذهبية */
+    #editSection { display: none; flex-direction: column; gap: 12px; }
+
+    .match-ticket-card {
+      width: 100%;
+      background: #0f1115;
+      border: 2px solid var(--itti-yellow);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.9);
+      user-select: none;
+      direction: ltr;
+      text-align: left;
+    }
+    .ticket-header {
+      background: #171b22;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ticket-brand { font-size: 0.85rem; font-weight: 900; color: var(--itti-yellow); letter-spacing: 1px; font-family: 'Space Mono', monospace; }
+    .ticket-type { font-size: 0.65rem; color: #fff; font-family: 'Space Mono', monospace; border: 1px solid var(--itti-yellow); padding: 2px 7px; border-radius: 10px; }
+    
+    .ticket-image-box {
+      width: 100%;
+      height: 230px;
+      overflow: hidden;
+      background: #000;
+    }
+    #ticketImg { width: 100%; height: 100%; object-fit: cover; }
+
+    .ticket-match-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px 8px;
+    }
+    .team-name { font-size: 1.15rem; font-weight: 900; color: #fff; font-family: 'Cairo', sans-serif; }
+    .team-sub { font-size: 0.65rem; color: var(--itti-yellow); font-family: 'Space Mono', monospace; }
+
+    .ticket-divider {
+      position: relative;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px 0;
+    }
+    .ticket-divider::before {
+      content: '';
+      position: absolute;
+      left: 14px; right: 14px;
+      border-top: 2px dashed #2c323f;
+    }
+    .notch-left, .notch-right {
+      position: absolute;
+      width: 16px; height: 16px;
+      background: var(--bg);
+      border-radius: 50%;
+      top: 0;
+    }
+    .notch-left { left: -8px; border-right: 2px solid var(--itti-yellow); }
+    .notch-right { right: -8px; border-left: 2px solid var(--itti-yellow); }
+
+    .ticket-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 6px 16px 10px;
+      text-align: left;
+    }
+    .ticket-lbl { font-size: 0.55rem; color: var(--muted); text-transform: uppercase; font-family: 'Space Mono', monospace; }
+    .ticket-val { font-size: 0.78rem; font-weight: bold; color: #fff; margin-top: 2px; font-family: 'Space Mono', monospace; }
+
+    .ticket-footer {
+      background: #0a0c0f;
+      border-top: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .barcode-bars { display: flex; gap: 2px; height: 28px; align-items: flex-end; }
+    .bar { background: #fff; height: 100%; }
+
+    /* لوحة الأدوات */
+    .studio-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .panel-title { font-size: 0.75rem; color: var(--itti-yellow); font-weight: bold; }
+    .input-field {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      width: 100%;
+      outline: none;
+    }
+    .input-field:focus { border-color: var(--itti-yellow); }
+
+    /* أزرار الإجراء */
+    .actions-group { display: flex; flex-direction: column; gap: 8px; }
+    .action-btn {
+      border: none;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .action-btn.save-archive { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .action-btn.share-ticket { background: linear-gradient(135deg, var(--itti-yellow), #c29b00); color: #000; }
+    .retake-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <div class="badge">ITTIHAD CHRONICLE • NFC TIGER</div>
+    <h1>مدرج الذهب التفاعلي</h1>
+    <p class="sub">سجل مباريات الاتحاد الدائم المتصل بقميص المدرج</p>
+  </header>
+
+  <!-- بطاقة عضوية المشجع -->
+  <div class="membership-card">
+    <div>
+      <div class="fan-title">شعب الاتحاد • ITTI TIGER</div>
+      <div class="fan-tag">MEMBER ID: ITTI-1927-FAN-01</div>
+    </div>
+    <div class="nfc-pill">
+      <span>📶 موثق NFC</span>
+    </div>
+  </div>
+
+  <!-- لوحة إحصائيات المدرج -->
+  <div class="stats-bar">
+    <div class="stat-box">
+      <div class="stat-val" id="statMatches">0</div>
+      <div class="stat-lbl">🏟️ مباريات حضرتها</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="statWins" style="color:var(--win);">0</div>
+      <div class="stat-lbl">🏆 احتفالات الفوز</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="statRate">100%</div>
+      <div class="stat-lbl">✨ تميمة الحظ</div>
+    </div>
+  </div>
+
+  <!-- خريطة الملاعب -->
+  <div class="map-card">
+    <div class="map-header">
+      <span>🗺️ خريطة رحلات خلف العميد</span>
+      <span style="font-size:0.65rem; color:var(--muted);">ملاعب المملكة وآسيا</span>
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <!-- أزرار التوثيق المزدوجة -->
+  <div class="capture-row" id="captureRow">
+    <label class="capture-box" for="cameraDirectInput">
+      <div class="camera-icon">📸</div>
+      <div class="capture-btn-label">توثيق من المدرج</div>
+      <div class="capture-sub">التقاط بالكاميرا الآن</div>
+    </label>
+    <input type="file" accept="image/*" capture="environment" id="cameraDirectInput" style="display:none;" onchange="handleImageSelection(event)">
+
+    <label class="capture-box" for="galleryDirectInput">
+      <div class="camera-icon">🖼️</div>
+      <div class="capture-btn-label">ألبوم الصور</div>
+      <div class="capture-sub">رفع لقطة من الاستوديو</div>
+    </label>
+    <input type="file" accept="image/*" id="galleryDirectInput" style="display:none;" onchange="handleImageSelection(event)">
+  </div>
+
+  <!-- أرشيف المباريات السابقة -->
+  <div class="archive-section" id="archiveSection">
+    <div class="archive-header">
+      <span>📚 مباريات القميص الموثقة:</span>
+      <span id="archiveTotal" style="font-size:0.7rem; color:var(--muted);"></span>
+    </div>
+    <div class="archive-scroll" id="archiveScroll">
+      <div style="font-size:0.75rem; color:var(--muted); padding:10px;">جاري مزامنة سجل المدرج...</div>
+    </div>
+  </div>
+
+  <!-- استوديو تذكرة المباراة وتعديلها -->
+  <div id="editSection">
+    
+    <!-- قالب تذكرة المباراة الذهبية -->
+    <div class="match-ticket-card" id="matchTicketBox">
+      <div class="ticket-header">
+        <div class="ticket-brand">⚽ ITTIHAD MATCHDAY PASS</div>
+        <div class="ticket-type">VIP SUPPORTER</div>
+      </div>
+
+      <div class="ticket-image-box">
+        <img id="ticketImg" src="" alt="لقطة المدرج">
+      </div>
+
+      <div class="ticket-match-row">
+        <div>
+          <div class="team-sub">HOME</div>
+          <div class="team-name" style="color:var(--itti-yellow);">الاتحاد</div>
+        </div>
+        <div style="font-size:1.1rem; font-weight:900; color:var(--itti-yellow); font-family:'Space Mono';">VS</div>
+        <div style="text-align:right;">
+          <div class="team-sub">AWAY</div>
+          <div class="team-name" id="ticketOpponent">الهلال</div>
+        </div>
+      </div>
+
+      <div class="ticket-divider">
+        <div class="notch-left"></div>
+        <div class="notch-right"></div>
+      </div>
+
+      <div class="ticket-grid">
+        <div>
+          <div class="ticket-lbl">STADIUM</div>
+          <div class="ticket-val" id="ticketStadium">الجوهرة المشعة</div>
+        </div>
+        <div>
+          <div class="ticket-lbl">SCORE</div>
+          <div class="ticket-val" id="ticketScore" style="color:var(--win);">2 - 1</div>
+        </div>
+        <div>
+          <div class="ticket-lbl">DATE</div>
+          <div class="ticket-val" id="ticketDate">2026/10</div>
+        </div>
+        <div>
+          <div class="ticket-lbl">STAND</div>
+          <div class="ticket-val" id="ticketStand">واجهة المدرج</div>
+        </div>
+        <div>
+          <div class="ticket-lbl">RESULT</div>
+          <div class="ticket-val" id="ticketResult" style="color:var(--win);">WIN (فوز)</div>
+        </div>
+        <div>
+          <div class="ticket-lbl">STATUS</div>
+          <div class="ticket-val" style="color:var(--itti-yellow);">ATTENDED</div>
+        </div>
+      </div>
+
+      <div class="ticket-footer">
+        <div class="barcode-bars">
+          <div class="bar" style="width:3px;"></div><div class="bar" style="width:1px;"></div><div class="bar" style="width:4px;"></div><div class="bar" style="width:2px;"></div><div class="bar" style="width:3px;"></div><div class="bar" style="width:5px;"></div><div class="bar" style="width:2px;"></div><div class="bar" style="width:4px;"></div><div class="bar" style="width:2px;"></div>
+        </div>
+        <div style="font-size:0.65rem; color:var(--muted); font-family:'Space Mono',monospace;">#ITTIHAD-GOLDEN-STAND</div>
+      </div>
+    </div>
+
+    <!-- لوحة إدخال تفاصيل المباراة -->
+    <div class="studio-panel">
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="display:flex; gap:6px;">
+          <input type="text" class="input-field" id="inputOpponent" oninput="updateLiveTicket()" placeholder="⚽ الخصم (مثل: الهلال / النصر)" style="flex:1;">
+          <input type="text" class="input-field" id="inputStadium" oninput="updateLiveTicket()" placeholder="🏟️ الملعب (مثل: الجوهرة المشعة)" style="flex:1;">
+        </div>
+        <div style="display:flex; gap:6px;">
+          <input type="text" class="input-field" id="inputScore" oninput="updateLiveTicket()" placeholder="🔢 النتيجة (مثل: 2 - 1)" style="flex:1;">
+          <input type="text" class="input-field" id="inputStand" oninput="updateLiveTicket()" placeholder="📍 المدرج (مثل: الواجهة / الرابطة)" style="flex:1;">
+        </div>
+        <select class="input-field" id="inputResult" onchange="updateLiveTicket()">
+          <option value="WIN (فوز)">فوز العميد 🏆</option>
+          <option value="DRAW (تعادل)">تعادل 🤝</option>
+          <option value="LOSS (خسارة)">خسارة ⚽</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- أزرار الإجراء -->
+    <div class="actions-group">
+      <button class="action-btn save-archive" id="saveArchiveBtn" onclick="saveMatchToArchive()">
+        <span>☁️ تثبيت المباراة في قميص المدرج</span>
+      </button>
+
+      <button class="action-btn share-ticket" onclick="exportTicketVisual()">
+        <span>🎫 تصدير ومشاركة تذكرة المباراة الذهبية</span>
+      </button>
+    </div>
+
+    <button class="retake-btn" onclick="resetCapture()">🔄 إلغاء والعودة للملعب</button>
+  </div>
+</div>
+
+<!-- Firebase SDK Module -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDPs8F7AqLqb1C4obDxVD6Hj9fa8DUqhi8",
+    authDomain: "ezwa-chronicle.firebaseapp.com",
+    projectId: "ezwa-chronicle",
+    storageBucket: "ezwa-chronicle.firebasestorage.app",
+    messagingSenderId: "116435675976",
+    appId: "1:116435675976:web:711adc1dcd05486d63a17d",
+    measurementId: "G-45W9PWSEH5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.saveMatchToFirestore = async function(entryData) {
+    try {
+      const docRef = await addDoc(collection(db, "ittihad_matches"), entryData);
+      return docRef.id;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  };
+
+  window.loadMatchesFromFirestore = async function() {
+    try {
+      const q = query(collection(db, "ittihad_matches"), orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
+      const items = [];
+      querySnapshot.forEach((d) => items.push({ id: d.id, ...d.data() }));
+      return items;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  window.deleteSingleMatchEntry = async function(docId) {
+    if (!docId) return false;
+    try {
+      await deleteDoc(doc(db, "ittihad_matches", docId));
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  };
+
+  window.addEventListener('load', () => {
+    if (window.syncCloudArchive) window.syncCloudArchive();
+  });
+</script>
+
+<script>
+  const OWNER_PIN = "1976";
+  const ITTI_STORAGE_KEY = "ITTIHAD_FAN_ARCHIVE_V1";
+
+  let map, markersGroup, routePolyline;
+  let currentLat = 21.7588, currentLon = 39.1558; // إحداثيات ملعب الجوهرة المشعة الافتراضية
+  let capturedBase64 = "";
+
+  function initMap() {
+    map = L.map('map', { zoomControl: false }).setView([currentLat, currentLon], 13);
+    
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18,
+      attribution: '&copy; Esri'
+    }).addTo(map);
+
+    markersGroup = L.layerGroup().addTo(map);
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        currentLat = pos.coords.latitude;
+        currentLon = pos.coords.longitude;
+        map.setView([currentLat, currentLon], 14);
+      });
+    }
+
+    loadLocalArchive();
+  }
+
+  function handleImageSelection(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      img.src = e.target.result;
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const maxDim = 900;
+        let w = img.width, h = img.height;
+        if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
+        else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        capturedBase64 = canvas.toDataURL('image/jpeg', 0.78);
+
+        document.getElementById('ticketImg').src = capturedBase64;
+        document.getElementById('captureRow').style.display = 'none';
+        document.getElementById('archiveSection').style.display = 'none';
+        document.getElementById('editSection').style.display = 'flex';
+
+        const now = new Date();
+        document.getElementById('ticketDate').innerText = now.toLocaleDateString('en-GB');
+
+        updateLiveTicket();
+      };
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateLiveTicket() {
+    const opp = document.getElementById('inputOpponent').value.trim() || "الهلال";
+    const std = document.getElementById('inputStadium').value.trim() || "الجوهرة المشعة";
+    const scr = document.getElementById('inputScore').value.trim() || "2 - 1";
+    const stn = document.getElementById('inputStand').value.trim() || "واجهة المدرج";
+    const res = document.getElementById('inputResult').value;
+
+    document.getElementById('ticketOpponent').innerText = opp;
+    document.getElementById('ticketStadium').innerText = std;
+    document.getElementById('ticketScore').innerText = scr;
+    document.getElementById('ticketStand').innerText = stn;
+    document.getElementById('ticketResult').innerText = res;
+
+    const isWin = res.includes('فوز');
+    document.getElementById('ticketResult').style.color = isWin ? 'var(--win)' : (res.includes('تعادل') ? 'var(--itti-yellow)' : 'var(--danger)');
+  }
+
+  async function saveMatchToArchive() {
+    const saveBtn = document.getElementById('saveArchiveBtn');
+    saveBtn.innerText = "⏳ جاري التثبيت في السحابة...";
+    saveBtn.disabled = true;
+
+    const newMatch = {
+      timestamp: Date.now(),
+      lat: currentLat,
+      lon: currentLon,
+      opponent: document.getElementById('inputOpponent').value.trim() || "مباراة رسمية",
+      stadium: document.getElementById('inputStadium').value.trim() || "الجوهرة المشعة",
+      score: document.getElementById('inputScore').value.trim() || "2 - 1",
+      stand: document.getElementById('inputStand').value.trim() || "المدرج",
+      result: document.getElementById('inputResult').value,
+      date: new Date().toLocaleDateString('ar-SA'),
+      image: capturedBase64
+    };
+
+    try {
+      if (window.saveMatchToFirestore) {
+        const cloudId = await window.saveMatchToFirestore(newMatch);
+        newMatch.id = cloudId;
+      }
+      let localArchive = JSON.parse(localStorage.getItem(ITTI_STORAGE_KEY) || "[]");
+      localArchive.unshift(newMatch);
+      localStorage.setItem(ITTI_STORAGE_KEY, JSON.stringify(localArchive));
+
+      alert("🏆 تم تثبيت المباراة في قميص المدرج بنجاح!");
+      resetCapture();
+      window.syncCloudArchive();
+    } catch (e) {
+      let localArchive = JSON.parse(localStorage.getItem(ITTI_STORAGE_KEY) || "[]");
+      localArchive.unshift(newMatch);
+      localStorage.setItem(ITTI_STORAGE_KEY, JSON.stringify(localArchive));
+      resetCapture();
+      loadLocalArchive();
+    } finally {
+      saveBtn.innerText = "☁️ تثبيت المباراة في قميص المدرج";
+      saveBtn.disabled = false;
+    }
+  }
+
+  async function deleteSingleMatch(index, docId) {
+    const enteredPin = prompt("🔒 إدخال الرمز السري لحذف المباراة:");
+    if (enteredPin !== OWNER_PIN) {
+      alert("⚠️ الرمز غير صحيح!");
+      return;
+    }
+
+    if (!confirm("هل أنت متأكد من حذف هذه المباراة نهائياً؟")) return;
+
+    let localArchive = JSON.parse(localStorage.getItem(ITTI_STORAGE_KEY) || "[]");
+    localArchive.splice(index, 1);
+    localStorage.setItem(ITTI_STORAGE_KEY, JSON.stringify(localArchive));
+
+    if (docId && window.deleteSingleMatchEntry) {
+      await window.deleteSingleMatchEntry(docId);
+    }
+
+    renderMatchesCards(localArchive);
+    window.syncCloudArchive();
+  }
+
+  window.syncCloudArchive = async function() {
+    if (window.loadMatchesFromFirestore) {
+      const cloudMatches = await window.loadMatchesFromFirestore();
+      if (cloudMatches && cloudMatches.length > 0) {
+        localStorage.setItem(ITTI_STORAGE_KEY, JSON.stringify(cloudMatches));
+        renderMatchesCards(cloudMatches);
+        return;
+      }
+    }
+    loadLocalArchive();
+  };
+
+  function loadLocalArchive() {
+    const archive = JSON.parse(localStorage.getItem(ITTI_STORAGE_KEY) || "[]");
+    renderMatchesCards(archive);
+  }
+
+  function renderMatchesCards(archive) {
+    markersGroup.clearLayers();
+    if (routePolyline) map.removeLayer(routePolyline);
+
+    const scrollContainer = document.getElementById('archiveScroll');
+    scrollContainer.innerHTML = "";
+
+    document.getElementById('archiveTotal').innerText = `(${archive.length})`;
+    document.getElementById('statMatches').innerText = archive.length;
+
+    const wins = archive.filter(m => m.result && m.result.includes('فوز')).length;
+    document.getElementById('statWins').innerText = wins;
+
+    const winRate = archive.length > 0 ? Math.round((wins / archive.length) * 100) : 100;
+    document.getElementById('statRate').innerText = `${winRate}%`;
+
+    if (archive.length === 0) {
+      scrollContainer.innerHTML = `<div style="font-size:0.75rem; color:var(--muted); padding:10px;">لا توجد مباريات مسجلة حالياً. وثّق حضورك القادم!</div>`;
+      return;
+    }
+
+    const pathCoordinates = archive.map(item => [item.lat, item.lon]);
+    if (pathCoordinates.length > 1) {
+      routePolyline = L.polyline(pathCoordinates, {
+        color: '#f5c400',
+        weight: 3.5,
+        opacity: 0.85,
+        dashArray: '6, 8'
+      }).addTo(map);
+    }
+
+    archive.forEach((item, index) => {
+      const pinIcon = L.divIcon({
+        className: 'custom-pin',
+        html: `<div style="background:#f5c400; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow:0 0 10px #f5c400;"></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      });
+
+      const marker = L.marker([item.lat, item.lon], { icon: pinIcon }).addTo(markersGroup);
+      marker.bindPopup(`
+        <div style="text-align:right; font-family:'Cairo',sans-serif; color:#000;">
+          <img src="${item.image}" style="width:100%; height:90px; object-fit:cover; border-radius:6px; margin-bottom:4px;">
+          <b style="font-size:0.85rem;">الاتحاد ضد ${item.opponent}</b><br>
+          <small style="color:#666;">🏟️ ${item.stadium} • النتيجة: ${item.score}</small>
+          <div style="margin-top:6px; text-align:center;">
+            <button onclick="deleteSingleMatch(${index}, '${item.id || ''}')" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer;">🔒 🗑️ حذف</button>
+          </div>
+        </div>
+      `);
+
+      const card = document.createElement('div');
+      card.className = "archive-card";
+      card.innerHTML = `
+        <button class="card-delete-btn" onclick="event.stopPropagation(); deleteSingleMatch(${index}, '${item.id || ''}')">✕</button>
+        <img class="archive-thumb" src="${item.image}" alt="${item.opponent}">
+        <div class="archive-info">
+          <div class="archive-loc">ضد ${item.opponent}</div>
+          <div class="archive-date">${item.date} • ${item.score}</div>
+        </div>
+      `;
+      card.onclick = () => {
+        map.setView([item.lat, item.lon], 15);
+        marker.openPopup();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+      scrollContainer.appendChild(card);
+    });
+  }
+
+  async function exportTicketVisual() {
+    const targetElement = document.getElementById('matchTicketBox');
+    try {
+      const canvas = await html2canvas(targetElement, { scale: 2.5, useCORS: true, backgroundColor: "#08090b" });
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `ITTIHAD-MATCH-${Date.now()}.png`, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'تذكرة مدرج الذهب | الاتحاد',
+            text: `📍 من قلب المدرج: الاتحاد ضد ${document.getElementById('inputOpponent').value || 'الخصم'} 🟡⚫`
+          });
+        } else {
+          const link = document.createElement('a');
+          link.download = `ITTIHAD-MATCH-${Date.now()}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          alert("تم حفظ تذكرة المباراة في الألبوم بجودة عالية!");
+        }
+      }, 'image/png');
+    } catch (e) {
+      alert("حدث خطأ أثناء استخراج التذكرة.");
+    }
+  }
+
+  function resetCapture() {
+    document.getElementById('cameraDirectInput').value = "";
+    document.getElementById('galleryDirectInput').value = "";
+    document.getElementById('ticketImg').src = "";
+    document.getElementById('editSection').style.display = 'none';
+    document.getElementById('captureRow').style.display = 'flex';
+    document.getElementById('archiveSection').style.display = 'flex';
+    map.invalidateSize();
+  }
+
+  window.onload = initMap;
+</script>
+</body>
+</html>
