@@ -69,7 +69,7 @@
       font-weight: 700;
     }
 
-    /* البطاقة الموسمية الفاخرة (Season Pass Card) */
+    /* البطاقة الموسمية الفاخرة */
     .season-pass-card {
       position: relative;
       background: linear-gradient(135deg, #1b1e26 0%, #0c0e12 100%);
@@ -106,22 +106,37 @@
     .metric-val { font-size: 1.25rem; font-weight: 900; color: var(--itti-yellow); font-family: 'Space Mono', monospace; }
     .metric-lbl { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
 
-    /* شريط إجراء التوثيق الرياضي */
+    /* أزرار التوثيق المزدوجة (كاميرا فورية + استوديو) */
+    .action-buttons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
     .match-action-banner {
       background: linear-gradient(135deg, var(--itti-yellow), #e0a800);
       border-radius: 14px;
-      padding: 14px 18px;
+      padding: 12px 10px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(255, 204, 0, 0.3);
+      box-shadow: 0 6px 18px rgba(255, 204, 0, 0.25);
       user-select: none;
+      text-align: center;
+      gap: 4px;
     }
-    .match-action-banner:active { transform: scale(0.98); }
-    .banner-text-title { font-size: 1rem; font-weight: 900; color: #000; }
-    .banner-text-sub { font-size: 0.68rem; color: rgba(0,0,0,0.75); font-weight: 700; margin-top: 1px; }
-    .banner-icon { font-size: 1.8rem; }
+    .match-action-banner.secondary {
+      background: var(--itti-card);
+      border: 1.5px solid var(--itti-yellow);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .match-action-banner:active { transform: scale(0.97); }
+    .banner-text-title { font-size: 0.88rem; font-weight: 900; color: #000; }
+    .secondary .banner-text-title { color: var(--itti-yellow); }
+    .banner-text-sub { font-size: 0.62rem; color: rgba(0,0,0,0.75); font-weight: 700; }
+    .secondary .banner-text-sub { color: var(--muted); }
+    .banner-icon { font-size: 1.6rem; }
 
     /* حائط ومدرج المباريات الموثقة */
     .timeline-title-row {
@@ -360,15 +375,24 @@
     </div>
   </div>
 
-  <!-- زر التوثيق الرياضي -->
-  <label class="match-action-banner" for="cameraDirectInput" id="bannerTrigger">
-    <div>
-      <div class="banner-text-title">وثّق حضورك في المدرج الآن 📸</div>
-      <div class="banner-text-sub">التقط صورة من قلب الملعب وأصدر تذكرتك الذهبية</div>
-    </div>
-    <div class="banner-icon">⚽</div>
-  </label>
-  <input type="file" accept="image/*" id="cameraDirectInput" style="display:none;" onchange="handleMatchPhoto(event)">
+  <!-- أزرار التوثيق المزدوجة (كاميرا فورية + استوديو) -->
+  <div class="action-buttons-grid" id="actionButtonsRow">
+    <!-- الزر 1: كاميرا فورية -->
+    <label class="match-action-banner" for="cameraDirectInput">
+      <div class="banner-icon">📸</div>
+      <div class="banner-text-title">الكاميرا الآن</div>
+      <div class="banner-text-sub">فتح عدسة التصوير فوراً</div>
+    </label>
+    <input type="file" accept="image/*" capture="environment" id="cameraDirectInput" style="display:none;" onchange="handleMatchPhoto(event)">
+
+    <!-- الزر 2: اختيار من ألبوم الصور -->
+    <label class="match-action-banner secondary" for="galleryDirectInput">
+      <div class="banner-icon">🖼️</div>
+      <div class="banner-text-title">ألبوم الصور</div>
+      <div class="banner-text-sub">رفع لقطة من الاستوديو</div>
+    </label>
+    <input type="file" accept="image/*" id="galleryDirectInput" style="display:none;" onchange="handleMatchPhoto(event)">
+  </div>
 
   <!-- حائط مباريات الموسم -->
   <div class="timeline-title-row" id="feedHeader">
@@ -378,7 +402,7 @@
 
   <div class="matches-feed" id="matchesFeed">
     <div style="text-align:center; padding:30px 10px; color:var(--muted); font-size:0.8rem; border:1px dashed var(--border); border-radius:12px;">
-      لم توثق أي مباراة بالقميص حتى الآن.<br>اضغط على الزر الذهبي بالأعلى لتوثيق مباراتك الأولى! 🟡⚫
+      لم توثق أي مباراة بالقميص حتى الآن.<br>اضغط على أحد أزرار التوثيق بالأعلى لتسجيل حضورك الأول! 🟡⚫
     </div>
   </div>
 
@@ -563,8 +587,8 @@
 
         document.getElementById('ticketPreviewImg').src = capturedBase64;
 
-        // إخفاء الواجهة وعرض الاستوديو
-        document.getElementById('bannerTrigger').style.display = 'none';
+        // إخفاء الأزرار وعرض الاستوديو
+        document.getElementById('actionButtonsRow').style.display = 'none';
         document.getElementById('feedHeader').style.display = 'none';
         document.getElementById('matchesFeed').style.display = 'none';
         document.getElementById('editSection').style.display = 'flex';
@@ -685,7 +709,7 @@
     if (list.length === 0) {
       feed.innerHTML = `
         <div style="text-align:center; padding:30px 10px; color:var(--muted); font-size:0.8rem; border:1px dashed var(--border); border-radius:12px;">
-          لم توثق أي مباراة بالقميص حتى الآن.<br>اضغط على الزر الذهبي بالأعلى لتوثيق مباراتك الأولى! 🟡⚫
+          لم توثق أي مباراة بالقميص حتى الآن.<br>اضغط على أحد أزرار التوثيق بالأعلى لتسجيل حضورك الأول! 🟡⚫
         </div>`;
       return;
     }
@@ -741,9 +765,10 @@
 
   function cancelEdit() {
     document.getElementById('cameraDirectInput').value = "";
+    document.getElementById('galleryDirectInput').value = "";
     document.getElementById('ticketPreviewImg').src = "";
     document.getElementById('editSection').style.display = 'none';
-    document.getElementById('bannerTrigger').style.display = 'flex';
+    document.getElementById('actionButtonsRow').style.display = 'grid';
     document.getElementById('feedHeader').style.display = 'flex';
     document.getElementById('matchesFeed').style.display = 'flex';
   }
