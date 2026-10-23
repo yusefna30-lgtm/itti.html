@@ -3,483 +3,485 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>مدرج الذهب | سجل مشجع العميد التفاعلي</title>
+  <title>نادي الاتحاد | منصة مدرج الذهب الذكية</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
     :root {
-      --bg: #08090b;
-      --card-bg: rgba(18, 20, 24, 0.96);
-      --itti-yellow: #f5c400;
+      --itti-yellow: #ffcc00;
       --itti-gold: #d4af37;
+      --itti-black: #0c0d10;
+      --itti-dark: #14171d;
+      --itti-card: rgba(22, 26, 34, 0.95);
+      --border: #282e3d;
       --text: #f0f3f8;
-      --muted: #8b939e;
-      --border: #232730;
-      --danger: #ef4444;
+      --muted: #8e98a8;
       --win: #10b981;
+      --danger: #ef4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
     body {
-      background-color: var(--bg);
+      background-color: var(--itti-black);
       color: var(--text);
-      padding: 12px;
+      padding: 14px 10px 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      background-image: radial-gradient(circle at 50% 0%, #1c1a0e 0%, var(--bg) 85%);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(255, 204, 0, 0.18) 0%, transparent 60%),
+        repeating-linear-gradient(135deg, rgba(0,0,0,0.4) 0px, rgba(0,0,0,0.4) 20px, rgba(20,20,20,0.4) 20px, rgba(20,20,20,0.4) 40px);
     }
-    .app-container { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 12px; }
+    .app-wrapper { width: 100%; max-width: 430px; display: flex; flex-direction: column; gap: 14px; }
 
-    header { text-align: center; padding: 4px 0 8px; border-bottom: 1px solid var(--border); }
-    .badge { display: inline-block; padding: 2px 10px; border: 1px solid var(--itti-yellow); border-radius: 20px; color: var(--itti-yellow); font-size: 0.65rem; font-weight: bold; letter-spacing: 1.5px; margin-bottom: 4px; }
-    h1 { font-size: 1.3rem; color: #fff; }
-    p.sub { font-size: 0.75rem; color: var(--muted); }
-
-    /* بطاقة عضوية المشجع */
-    .membership-card {
-      background: linear-gradient(135deg, rgba(245, 196, 0, 0.12), rgba(0,0,0,0.6));
-      border: 1px solid rgba(245, 196, 0, 0.35);
-      border-radius: 12px;
-      padding: 10px 14px;
+    /* شريط النادي العلوي */
+    .club-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      padding: 4px 6px;
+      border-bottom: 2px solid var(--border);
     }
-    .fan-title { font-size: 0.95rem; font-weight: 900; color: var(--itti-yellow); }
-    .fan-tag { font-size: 0.65rem; color: var(--muted); font-family: 'Space Mono', monospace; }
-    .nfc-pill {
-      display: inline-flex;
+    .club-title-box { display: flex; align-items: center; gap: 8px; }
+    .tiger-badge {
+      font-size: 1.6rem;
+      background: linear-gradient(135deg, var(--itti-yellow), #a88200);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 900;
+    }
+    .club-name { font-size: 1.15rem; font-weight: 900; color: #fff; line-height: 1.1; }
+    .club-sub { font-size: 0.65rem; color: var(--itti-yellow); letter-spacing: 1px; font-weight: 700; }
+    .nfc-indicator {
+      display: flex;
       align-items: center;
       gap: 5px;
-      padding: 3px 8px;
-      background: rgba(245, 196, 0, 0.15);
+      background: rgba(255, 204, 0, 0.12);
       border: 1px solid var(--itti-yellow);
-      border-radius: 14px;
+      padding: 3px 10px;
+      border-radius: 20px;
       font-size: 0.65rem;
-      font-weight: 700;
       color: var(--itti-yellow);
+      font-weight: 700;
     }
 
-    /* إحصائيات المدرج */
-    .stats-bar {
+    /* البطاقة الموسمية الفاخرة (Season Pass Card) */
+    .season-pass-card {
+      position: relative;
+      background: linear-gradient(135deg, #1b1e26 0%, #0c0e12 100%);
+      border: 1.5px solid var(--itti-yellow);
+      border-radius: 18px;
+      padding: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 0 20px rgba(255, 204, 0, 0.08);
+    }
+    .season-pass-card::after {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: -20px;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, var(--itti-yellow) 0%, transparent 70%);
+      opacity: 0.15;
+    }
+    .pass-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .fan-role { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-family: 'Space Mono', monospace; }
+    .fan-name { font-size: 1.2rem; font-weight: 900; color: #fff; margin-top: 2px; }
+    .pass-serial { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--itti-yellow); }
+
+    .pass-metrics {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px dashed rgba(255,255,255,0.12);
     }
-    .stat-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 4px;
-      text-align: center;
-    }
-    .stat-val { font-size: 1rem; font-weight: 900; color: var(--itti-yellow); }
-    .stat-lbl { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+    .metric-item { text-align: center; }
+    .metric-val { font-size: 1.25rem; font-weight: 900; color: var(--itti-yellow); font-family: 'Space Mono', monospace; }
+    .metric-lbl { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
 
-    /* خريطة الملاعب */
-    .map-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
+    /* شريط إجراء التوثيق الرياضي */
+    .match-action-banner {
+      background: linear-gradient(135deg, var(--itti-yellow), #e0a800);
       border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-    }
-    .map-header {
-      padding: 8px 12px;
+      padding: 14px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(0,0,0,0.5);
-      border-bottom: 1px solid var(--border);
-      font-size: 0.75rem;
-      color: var(--itti-yellow);
-      font-weight: bold;
-    }
-    #map { width: 100%; height: 215px; background: #15181e; }
-
-    /* أزرار التوثيق */
-    .capture-row { display: flex; gap: 10px; width: 100%; }
-    .capture-box {
-      flex: 1;
-      background: var(--card-bg);
-      border: 2px dashed var(--itti-yellow);
-      border-radius: 14px;
-      padding: 16px 8px;
-      text-align: center;
       cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
+      box-shadow: 0 6px 20px rgba(255, 204, 0, 0.3);
       user-select: none;
     }
-    .capture-box:active { background: rgba(245, 196, 0, 0.12); transform: scale(0.98); }
-    .camera-icon { font-size: 1.8rem; }
-    .capture-btn-label { font-size: 0.88rem; font-weight: bold; color: var(--itti-yellow); }
-    .capture-sub { font-size: 0.68rem; color: var(--muted); }
+    .match-action-banner:active { transform: scale(0.98); }
+    .banner-text-title { font-size: 1rem; font-weight: 900; color: #000; }
+    .banner-text-sub { font-size: 0.68rem; color: rgba(0,0,0,0.75); font-weight: 700; margin-top: 1px; }
+    .banner-icon { font-size: 1.8rem; }
 
-    /* أرشيف المباريات */
-    .archive-section {
-      background: var(--card-bg);
+    /* حائط ومدرج المباريات الموثقة */
+    .timeline-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4px;
+      margin-top: 6px;
+    }
+    .timeline-title { font-size: 0.9rem; font-weight: 900; color: var(--itti-yellow); }
+    .timeline-count { font-size: 0.7rem; color: var(--muted); }
+
+    .matches-feed { display: flex; flex-direction: column; gap: 12px; }
+    .match-card {
+      background: var(--itti-card);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .archive-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: bold; color: var(--itti-yellow); }
-    .archive-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 6px 2px 8px; }
-    .archive-card {
-      min-width: 125px;
-      max-width: 125px;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid var(--border);
-      border-radius: 10px;
       overflow: hidden;
-      cursor: pointer;
       display: flex;
       flex-direction: column;
-      flex-shrink: 0;
       position: relative;
     }
-    .archive-thumb { width: 100%; height: 110px; object-fit: cover; }
-    .archive-info { padding: 6px; font-size: 0.7rem; text-align: right; }
-    .archive-loc { font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .archive-date { color: var(--muted); font-size: 0.6rem; margin-top: 2px; }
-
-    .card-delete-btn {
+    .match-card-photo {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #000;
+    }
+    .match-card-body {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .match-versus-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 900;
+      font-size: 1.05rem;
+    }
+    .match-score-badge {
+      background: #0c0e12;
+      border: 1px solid var(--itti-yellow);
+      color: var(--itti-yellow);
+      padding: 2px 10px;
+      border-radius: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+    }
+    .match-details-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 6px;
+      margin-top: 4px;
+    }
+    .match-delete-btn {
       position: absolute;
-      top: 5px;
-      left: 5px;
-      background: rgba(0,0,0,0.75);
-      color: #ef4444;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      color: var(--danger);
       border: 1px solid rgba(239, 68, 68, 0.4);
       border-radius: 50%;
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       cursor: pointer;
-      z-index: 5;
     }
 
-    /* استوديو تذكرة المباراة الذهبية */
+    /* استوديو تذكرة المباراة الذهبيه للمشاركة */
     #editSection { display: none; flex-direction: column; gap: 12px; }
 
-    .match-ticket-card {
-      width: 100%;
-      background: #0f1115;
+    .ticket-export-box {
+      background: #090b0e;
       border: 2px solid var(--itti-yellow);
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.9);
       user-select: none;
       direction: ltr;
       text-align: left;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.9);
     }
     .ticket-header {
-      background: #171b22;
+      background: #13171f;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 1px solid var(--border);
-      padding: 10px 14px;
+    }
+    .ticket-brand { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 900; color: var(--itti-yellow); }
+    .ticket-pill { font-size: 0.65rem; color: #fff; border: 1px solid var(--itti-yellow); padding: 1px 6px; border-radius: 8px; }
+
+    .ticket-img-container { width: 100%; height: 210px; background: #000; overflow: hidden; }
+    #ticketPreviewImg { width: 100%; height: 100%; object-fit: cover; }
+
+    .ticket-mid-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 12px 18px 8px;
     }
-    .ticket-brand { font-size: 0.85rem; font-weight: 900; color: var(--itti-yellow); letter-spacing: 1px; font-family: 'Space Mono', monospace; }
-    .ticket-type { font-size: 0.65rem; color: #fff; font-family: 'Space Mono', monospace; border: 1px solid var(--itti-yellow); padding: 2px 7px; border-radius: 10px; }
-    
-    .ticket-image-box {
-      width: 100%;
-      height: 230px;
-      overflow: hidden;
-      background: #000;
-    }
-    #ticketImg { width: 100%; height: 100%; object-fit: cover; }
+    .ticket-team { font-size: 1.15rem; font-weight: 900; color: #fff; font-family: 'Cairo', sans-serif; }
+    .ticket-vs { font-size: 1.1rem; font-weight: 900; color: var(--itti-yellow); font-family: 'Space Mono', monospace; }
 
-    .ticket-match-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px 8px;
-    }
-    .team-name { font-size: 1.15rem; font-weight: 900; color: #fff; font-family: 'Cairo', sans-serif; }
-    .team-sub { font-size: 0.65rem; color: var(--itti-yellow); font-family: 'Space Mono', monospace; }
-
-    .ticket-divider {
+    .ticket-tear-line {
       position: relative;
-      height: 16px;
+      height: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 4px 0;
     }
-    .ticket-divider::before {
+    .ticket-tear-line::before {
       content: '';
       position: absolute;
       left: 14px; right: 14px;
-      border-top: 2px dashed #2c323f;
+      border-top: 2px dashed #2d3545;
     }
-    .notch-left, .notch-right {
+    .tear-cut-left, .tear-cut-right {
       position: absolute;
       width: 16px; height: 16px;
-      background: var(--bg);
+      background: var(--itti-black);
       border-radius: 50%;
-      top: 0;
     }
-    .notch-left { left: -8px; border-right: 2px solid var(--itti-yellow); }
-    .notch-right { right: -8px; border-left: 2px solid var(--itti-yellow); }
+    .tear-cut-left { left: -8px; border-right: 2px solid var(--itti-yellow); }
+    .tear-cut-right { right: -8px; border-left: 2px solid var(--itti-yellow); }
 
-    .ticket-grid {
+    .ticket-data-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 6px;
-      padding: 6px 16px 10px;
-      text-align: left;
+      padding: 8px 18px 12px;
     }
-    .ticket-lbl { font-size: 0.55rem; color: var(--muted); text-transform: uppercase; font-family: 'Space Mono', monospace; }
-    .ticket-val { font-size: 0.78rem; font-weight: bold; color: #fff; margin-top: 2px; font-family: 'Space Mono', monospace; }
+    .t-lbl { font-size: 0.55rem; color: var(--muted); font-family: 'Space Mono', monospace; text-transform: uppercase; }
+    .t-val { font-size: 0.78rem; font-weight: bold; color: #fff; font-family: 'Space Mono', monospace; margin-top: 1px; }
 
-    .ticket-footer {
-      background: #0a0c0f;
+    .ticket-barcode-footer {
+      background: #06080a;
       border-top: 1px solid var(--border);
-      padding: 10px 16px;
+      padding: 10px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .barcode-bars { display: flex; gap: 2px; height: 28px; align-items: flex-end; }
-    .bar { background: #fff; height: 100%; }
+    .barcode-svg { display: flex; gap: 2px; height: 26px; align-items: flex-end; }
+    .b-bar { background: #fff; height: 100%; }
 
-    /* لوحة الأدوات */
-    .studio-panel {
-      background: var(--card-bg);
+    /* لوحة الإدخال */
+    .editor-panel {
+      background: var(--itti-card);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
-    .panel-title { font-size: 0.75rem; color: var(--itti-yellow); font-weight: bold; }
-    .input-field {
-      background: rgba(0,0,0,0.4);
+    .editor-input {
+      background: #0d0f14;
       border: 1px solid var(--border);
       color: #fff;
-      padding: 9px 12px;
+      padding: 10px 12px;
       border-radius: 8px;
       font-size: 0.85rem;
-      width: 100%;
       outline: none;
     }
-    .input-field:focus { border-color: var(--itti-yellow); }
+    .editor-input:focus { border-color: var(--itti-yellow); }
 
-    /* أزرار الإجراء */
-    .actions-group { display: flex; flex-direction: column; gap: 8px; }
-    .action-btn {
+    .action-btn-row { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .main-btn {
       border: none;
       padding: 13px;
       border-radius: 10px;
-      font-size: 0.9rem;
-      font-weight: bold;
+      font-size: 0.92rem;
+      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
     }
-    .action-btn.save-archive { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
-    .action-btn.share-ticket { background: linear-gradient(135deg, var(--itti-yellow), #c29b00); color: #000; }
-    .retake-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; }
+    .main-btn.save { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .main-btn.ticket { background: linear-gradient(135deg, var(--itti-yellow), #c29b00); color: #000; }
+    .cancel-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<div class="app-container">
-  <header>
-    <div class="badge">ITTIHAD CHRONICLE • NFC TIGER</div>
-    <h1>مدرج الذهب التفاعلي</h1>
-    <p class="sub">سجل مباريات الاتحاد الدائم المتصل بقميص المدرج</p>
-  </header>
-
-  <!-- بطاقة عضوية المشجع -->
-  <div class="membership-card">
-    <div>
-      <div class="fan-title">شعب الاتحاد • ITTI TIGER</div>
-      <div class="fan-tag">MEMBER ID: ITTI-1927-FAN-01</div>
+<div class="app-wrapper">
+  
+  <!-- رأس شريط النادي -->
+  <div class="club-bar">
+    <div class="club-title-box">
+      <div class="tiger-badge">🐅</div>
+      <div>
+        <div class="club-name">مدرج الذهب • ITTIHAD</div>
+        <div class="club-sub">سجل حضور مباريات العميد الرسمي</div>
+      </div>
     </div>
-    <div class="nfc-pill">
+    <div class="nfc-indicator">
       <span>📶 موثق NFC</span>
     </div>
   </div>
 
-  <!-- لوحة إحصائيات المدرج -->
-  <div class="stats-bar">
-    <div class="stat-box">
-      <div class="stat-val" id="statMatches">0</div>
-      <div class="stat-lbl">🏟️ مباريات حضرتها</div>
+  <!-- البطاقة الموسمية الرقمية للمشجع -->
+  <div class="season-pass-card">
+    <div class="pass-top">
+      <div>
+        <div class="fan-role">TIGER SUPPORTER CARD</div>
+        <div class="fan-name">مشجع اتحادي ذهبي</div>
+      </div>
+      <div class="pass-serial">ITTI-2026-NFC</div>
     </div>
-    <div class="stat-box">
-      <div class="stat-val" id="statWins" style="color:var(--win);">0</div>
-      <div class="stat-lbl">🏆 احتفالات الفوز</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-val" id="statRate">100%</div>
-      <div class="stat-lbl">✨ تميمة الحظ</div>
-    </div>
-  </div>
-
-  <!-- خريطة الملاعب -->
-  <div class="map-card">
-    <div class="map-header">
-      <span>🗺️ خريطة رحلات خلف العميد</span>
-      <span style="font-size:0.65rem; color:var(--muted);">ملاعب المملكة وآسيا</span>
-    </div>
-    <div id="map"></div>
-  </div>
-
-  <!-- أزرار التوثيق المزدوجة -->
-  <div class="capture-row" id="captureRow">
-    <label class="capture-box" for="cameraDirectInput">
-      <div class="camera-icon">📸</div>
-      <div class="capture-btn-label">توثيق من المدرج</div>
-      <div class="capture-sub">التقاط بالكاميرا الآن</div>
-    </label>
-    <input type="file" accept="image/*" capture="environment" id="cameraDirectInput" style="display:none;" onchange="handleImageSelection(event)">
-
-    <label class="capture-box" for="galleryDirectInput">
-      <div class="camera-icon">🖼️</div>
-      <div class="capture-btn-label">ألبوم الصور</div>
-      <div class="capture-sub">رفع لقطة من الاستوديو</div>
-    </label>
-    <input type="file" accept="image/*" id="galleryDirectInput" style="display:none;" onchange="handleImageSelection(event)">
-  </div>
-
-  <!-- أرشيف المباريات السابقة -->
-  <div class="archive-section" id="archiveSection">
-    <div class="archive-header">
-      <span>📚 مباريات القميص الموثقة:</span>
-      <span id="archiveTotal" style="font-size:0.7rem; color:var(--muted);"></span>
-    </div>
-    <div class="archive-scroll" id="archiveScroll">
-      <div style="font-size:0.75rem; color:var(--muted); padding:10px;">جاري مزامنة سجل المدرج...</div>
+    <div class="pass-metrics">
+      <div class="metric-item">
+        <div class="metric-val" id="statTotalMatches">0</div>
+        <div class="metric-lbl">مباريات المدرج</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-val" id="statTotalWins" style="color:var(--win);">0</div>
+        <div class="metric-lbl">انتصارات احتفلت بها</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-val" id="statLuckRate">100%</div>
+        <div class="metric-lbl">تميمة الحظ</div>
+      </div>
     </div>
   </div>
 
-  <!-- استوديو تذكرة المباراة وتعديلها -->
+  <!-- زر التوثيق الرياضي -->
+  <label class="match-action-banner" for="cameraDirectInput" id="bannerTrigger">
+    <div>
+      <div class="banner-text-title">وثّق حضورك في المدرج الآن 📸</div>
+      <div class="banner-text-sub">التقط صورة من قلب الملعب وأصدر تذكرتك الذهبية</div>
+    </div>
+    <div class="banner-icon">⚽</div>
+  </label>
+  <input type="file" accept="image/*" id="cameraDirectInput" style="display:none;" onchange="handleMatchPhoto(event)">
+
+  <!-- حائط مباريات الموسم -->
+  <div class="timeline-title-row" id="feedHeader">
+    <div class="timeline-title">📋 سجل حضور المدرج للموسم:</div>
+    <div class="timeline-count" id="feedCount">0 مباراة</div>
+  </div>
+
+  <div class="matches-feed" id="matchesFeed">
+    <div style="text-align:center; padding:30px 10px; color:var(--muted); font-size:0.8rem; border:1px dashed var(--border); border-radius:12px;">
+      لم توثق أي مباراة بالقميص حتى الآن.<br>اضغط على الزر الذهبي بالأعلى لتوثيق مباراتك الأولى! 🟡⚫
+    </div>
+  </div>
+
+  <!-- شاشة الاستوديو والتعديل -->
   <div id="editSection">
     
-    <!-- قالب تذكرة المباراة الذهبية -->
-    <div class="match-ticket-card" id="matchTicketBox">
+    <!-- قالب التذكرة الذهبية المصدرة -->
+    <div class="ticket-export-box" id="ticketBox">
       <div class="ticket-header">
-        <div class="ticket-brand">⚽ ITTIHAD MATCHDAY PASS</div>
-        <div class="ticket-type">VIP SUPPORTER</div>
+        <div class="ticket-brand">ITTIHAD MATCH PASS</div>
+        <div class="ticket-pill">MATCHDAY</div>
       </div>
 
-      <div class="ticket-image-box">
-        <img id="ticketImg" src="" alt="لقطة المدرج">
+      <div class="ticket-img-container">
+        <img id="ticketPreviewImg" src="" alt="لقطة الملعب">
       </div>
 
-      <div class="ticket-match-row">
+      <div class="ticket-mid-bar">
         <div>
-          <div class="team-sub">HOME</div>
-          <div class="team-name" style="color:var(--itti-yellow);">الاتحاد</div>
+          <div style="font-size:0.6rem; color:var(--itti-yellow); font-family:'Space Mono';">HOME</div>
+          <div class="ticket-team" style="color:var(--itti-yellow);">الاتحاد</div>
         </div>
-        <div style="font-size:1.1rem; font-weight:900; color:var(--itti-yellow); font-family:'Space Mono';">VS</div>
+        <div class="ticket-vs">VS</div>
         <div style="text-align:right;">
-          <div class="team-sub">AWAY</div>
-          <div class="team-name" id="ticketOpponent">الهلال</div>
+          <div style="font-size:0.6rem; color:var(--muted); font-family:'Space Mono';">AWAY</div>
+          <div class="ticket-team" id="displayOpponent">الهلال</div>
         </div>
       </div>
 
-      <div class="ticket-divider">
-        <div class="notch-left"></div>
-        <div class="notch-right"></div>
+      <div class="ticket-tear-line">
+        <div class="tear-cut-left"></div>
+        <div class="tear-cut-right"></div>
       </div>
 
-      <div class="ticket-grid">
+      <div class="ticket-data-grid">
         <div>
-          <div class="ticket-lbl">STADIUM</div>
-          <div class="ticket-val" id="ticketStadium">الجوهرة المشعة</div>
+          <div class="t-lbl">STADIUM</div>
+          <div class="t-val" id="displayStadium">الجوهرة</div>
         </div>
         <div>
-          <div class="ticket-lbl">SCORE</div>
-          <div class="ticket-val" id="ticketScore" style="color:var(--win);">2 - 1</div>
+          <div class="t-lbl">SCORE</div>
+          <div class="t-val" id="displayScore" style="color:var(--win);">2 - 1</div>
         </div>
         <div>
-          <div class="ticket-lbl">DATE</div>
-          <div class="ticket-val" id="ticketDate">2026/10</div>
+          <div class="t-lbl">DATE</div>
+          <div class="t-val" id="displayDate">2026/10</div>
         </div>
         <div>
-          <div class="ticket-lbl">STAND</div>
-          <div class="ticket-val" id="ticketStand">واجهة المدرج</div>
+          <div class="t-lbl">STAND</div>
+          <div class="t-val" id="displayStand">الواجهة</div>
         </div>
         <div>
-          <div class="ticket-lbl">RESULT</div>
-          <div class="ticket-val" id="ticketResult" style="color:var(--win);">WIN (فوز)</div>
+          <div class="t-lbl">RESULT</div>
+          <div class="t-val" id="displayResult" style="color:var(--win);">فوز 🏆</div>
         </div>
         <div>
-          <div class="ticket-lbl">STATUS</div>
-          <div class="ticket-val" style="color:var(--itti-yellow);">ATTENDED</div>
+          <div class="t-lbl">STATUS</div>
+          <div class="t-val" style="color:var(--itti-yellow);">VERIFIED</div>
         </div>
       </div>
 
-      <div class="ticket-footer">
-        <div class="barcode-bars">
-          <div class="bar" style="width:3px;"></div><div class="bar" style="width:1px;"></div><div class="bar" style="width:4px;"></div><div class="bar" style="width:2px;"></div><div class="bar" style="width:3px;"></div><div class="bar" style="width:5px;"></div><div class="bar" style="width:2px;"></div><div class="bar" style="width:4px;"></div><div class="bar" style="width:2px;"></div>
+      <div class="ticket-barcode-footer">
+        <div class="barcode-svg">
+          <div class="b-bar" style="width:3px;"></div><div class="b-bar" style="width:1px;"></div><div class="b-bar" style="width:4px;"></div><div class="b-bar" style="width:2px;"></div><div class="b-bar" style="width:3px;"></div><div class="b-bar" style="width:5px;"></div><div class="b-bar" style="width:2px;"></div><div class="b-bar" style="width:4px;"></div><div class="b-bar" style="width:2px;"></div>
         </div>
-        <div style="font-size:0.65rem; color:var(--muted); font-family:'Space Mono',monospace;">#ITTIHAD-GOLDEN-STAND</div>
-      </div>
-    </div>
-
-    <!-- لوحة إدخال تفاصيل المباراة -->
-    <div class="studio-panel">
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <div style="display:flex; gap:6px;">
-          <input type="text" class="input-field" id="inputOpponent" oninput="updateLiveTicket()" placeholder="⚽ الخصم (مثل: الهلال / النصر)" style="flex:1;">
-          <input type="text" class="input-field" id="inputStadium" oninput="updateLiveTicket()" placeholder="🏟️ الملعب (مثل: الجوهرة المشعة)" style="flex:1;">
-        </div>
-        <div style="display:flex; gap:6px;">
-          <input type="text" class="input-field" id="inputScore" oninput="updateLiveTicket()" placeholder="🔢 النتيجة (مثل: 2 - 1)" style="flex:1;">
-          <input type="text" class="input-field" id="inputStand" oninput="updateLiveTicket()" placeholder="📍 المدرج (مثل: الواجهة / الرابطة)" style="flex:1;">
-        </div>
-        <select class="input-field" id="inputResult" onchange="updateLiveTicket()">
-          <option value="WIN (فوز)">فوز العميد 🏆</option>
-          <option value="DRAW (تعادل)">تعادل 🤝</option>
-          <option value="LOSS (خسارة)">خسارة ⚽</option>
-        </select>
+        <div style="font-size:0.65rem; color:var(--muted); font-family:'Space Mono';">#TIGER-CHRONICLE</div>
       </div>
     </div>
 
-    <!-- أزرار الإجراء -->
-    <div class="actions-group">
-      <button class="action-btn save-archive" id="saveArchiveBtn" onclick="saveMatchToArchive()">
-        <span>☁️ تثبيت المباراة في قميص المدرج</span>
+    <!-- لوحة إدخال وتعديل بيانات المباراة -->
+    <div class="editor-panel">
+      <div style="display:flex; gap:6px;">
+        <input type="text" class="editor-input" id="inOpponent" placeholder="⚽ الفريق المنافس (مثل: الهلال)" oninput="syncInputs()" style="flex:1;">
+        <input type="text" class="editor-input" id="inStadium" placeholder="🏟️ الملعب (مثل: الجوهرة المشعة)" oninput="syncInputs()" style="flex:1;">
+      </div>
+      <div style="display:flex; gap:6px;">
+        <input type="text" class="editor-input" id="inScore" placeholder="🔢 النتيجة (مثل: 2 - 1)" oninput="syncInputs()" style="flex:1;">
+        <input type="text" class="editor-input" id="inStand" placeholder="📍 مكان جلوسك (مثل: الواجهة)" oninput="syncInputs()" style="flex:1;">
+      </div>
+      <select class="editor-input" id="inResult" onchange="syncInputs()">
+        <option value="فوز 🏆">فوز النمور 🏆</option>
+        <option value="تعادل 🤝">تعادل 🤝</option>
+        <option value="خسارة ⚽">خسارة ⚽</option>
+      </select>
+    </div>
+
+    <!-- أزرار الحفظ والمشاركة -->
+    <div class="action-btn-row">
+      <button class="main-btn save" id="btnSaveMatch" onclick="saveMatch()">
+        <span>☁️ حفظ المباراة في قميص المدرج</span>
       </button>
 
-      <button class="action-btn share-ticket" onclick="exportTicketVisual()">
-        <span>🎫 تصدير ومشاركة تذكرة المباراة الذهبية</span>
+      <button class="main-btn ticket" onclick="shareTicketCard()">
+        <span>🎫 مشاركة تذكرة المباراة الذهبية</span>
       </button>
+
+      <button class="cancel-btn" onclick="cancelEdit()">🔄 إلغاء والعودة للقائمة</button>
     </div>
 
-    <button class="retake-btn" onclick="resetCapture()">🔄 إلغاء والعودة للملعب</button>
   </div>
 </div>
 
-<!-- Firebase SDK Module -->
+<!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
@@ -497,9 +499,9 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  window.saveMatchToFirestore = async function(entryData) {
+  window.saveMatchCloud = async function(data) {
     try {
-      const docRef = await addDoc(collection(db, "ittihad_matches"), entryData);
+      const docRef = await addDoc(collection(db, "ittihad_fan_matches"), data);
       return docRef.id;
     } catch (e) {
       console.error(e);
@@ -507,65 +509,40 @@
     }
   };
 
-  window.loadMatchesFromFirestore = async function() {
+  window.loadMatchesCloud = async function() {
     try {
-      const q = query(collection(db, "ittihad_matches"), orderBy("timestamp", "desc"));
-      const querySnapshot = await getDocs(q);
-      const items = [];
-      querySnapshot.forEach((d) => items.push({ id: d.id, ...d.data() }));
-      return items;
+      const q = query(collection(db, "ittihad_fan_matches"), orderBy("timestamp", "desc"));
+      const snap = await getDocs(q);
+      const list = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      return list;
     } catch (e) {
       console.error(e);
       return null;
     }
   };
 
-  window.deleteSingleMatchEntry = async function(docId) {
+  window.deleteMatchCloud = async function(docId) {
     if (!docId) return false;
     try {
-      await deleteDoc(doc(db, "ittihad_matches", docId));
+      await deleteDoc(doc(db, "ittihad_fan_matches", docId));
       return true;
     } catch (e) {
-      console.error(e);
       return false;
     }
   };
 
   window.addEventListener('load', () => {
-    if (window.syncCloudArchive) window.syncCloudArchive();
+    if (window.syncFanArchive) window.syncFanArchive();
   });
 </script>
 
 <script>
   const OWNER_PIN = "1976";
-  const ITTI_STORAGE_KEY = "ITTIHAD_FAN_ARCHIVE_V1";
-
-  let map, markersGroup, routePolyline;
-  let currentLat = 21.7588, currentLon = 39.1558;
+  const STORAGE_KEY = "ITTI_FAN_MATCHES_APP_V2";
   let capturedBase64 = "";
 
-  function initMap() {
-    map = L.map('map', { zoomControl: false }).setView([currentLat, currentLon], 13);
-    
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 18,
-      attribution: '&copy; Esri'
-    }).addTo(map);
-
-    markersGroup = L.layerGroup().addTo(map);
-
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        currentLat = pos.coords.latitude;
-        currentLon = pos.coords.longitude;
-        map.setView([currentLat, currentLon], 14);
-      });
-    }
-
-    loadLocalArchive();
-  }
-
-  function handleImageSelection(event) {
+  function handleMatchPhoto(event) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -582,227 +559,199 @@
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        capturedBase64 = canvas.toDataURL('image/jpeg', 0.78);
+        capturedBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
-        document.getElementById('ticketImg').src = capturedBase64;
-        document.getElementById('captureRow').style.display = 'none';
-        document.getElementById('archiveSection').style.display = 'none';
+        document.getElementById('ticketPreviewImg').src = capturedBase64;
+
+        // إخفاء الواجهة وعرض الاستوديو
+        document.getElementById('bannerTrigger').style.display = 'none';
+        document.getElementById('feedHeader').style.display = 'none';
+        document.getElementById('matchesFeed').style.display = 'none';
         document.getElementById('editSection').style.display = 'flex';
 
         const now = new Date();
-        document.getElementById('ticketDate').innerText = now.toLocaleDateString('en-GB');
+        document.getElementById('displayDate').innerText = now.toLocaleDateString('en-GB');
 
-        updateLiveTicket();
+        syncInputs();
       };
     };
     reader.readAsDataURL(file);
   }
 
-  function updateLiveTicket() {
-    const opp = document.getElementById('inputOpponent').value.trim() || "الهلال";
-    const std = document.getElementById('inputStadium').value.trim() || "الجوهرة المشعة";
-    const scr = document.getElementById('inputScore').value.trim() || "2 - 1";
-    const stn = document.getElementById('inputStand').value.trim() || "واجهة المدرج";
-    const res = document.getElementById('inputResult').value;
+  function syncInputs() {
+    const opp = document.getElementById('inOpponent').value.trim() || "الهلال";
+    const std = document.getElementById('inStadium').value.trim() || "الجوهرة المشعة";
+    const scr = document.getElementById('inScore').value.trim() || "2 - 1";
+    const stn = document.getElementById('inStand').value.trim() || "الواجهة";
+    const res = document.getElementById('inResult').value;
 
-    document.getElementById('ticketOpponent').innerText = opp;
-    document.getElementById('ticketStadium').innerText = std;
-    document.getElementById('ticketScore').innerText = scr;
-    document.getElementById('ticketStand').innerText = stn;
-    document.getElementById('ticketResult').innerText = res;
+    document.getElementById('displayOpponent').innerText = opp;
+    document.getElementById('displayStadium').innerText = std;
+    document.getElementById('displayScore').innerText = scr;
+    document.getElementById('displayStand').innerText = stn;
+    document.getElementById('displayResult').innerText = res;
 
     const isWin = res.includes('فوز');
-    document.getElementById('ticketResult').style.color = isWin ? 'var(--win)' : (res.includes('تعادل') ? 'var(--itti-yellow)' : 'var(--danger)');
+    document.getElementById('displayResult').style.color = isWin ? 'var(--win)' : (res.includes('تعادل') ? 'var(--itti-yellow)' : 'var(--danger)');
+    document.getElementById('displayScore').style.color = isWin ? 'var(--win)' : '#fff';
   }
 
-  async function saveMatchToArchive() {
-    const saveBtn = document.getElementById('saveArchiveBtn');
-    saveBtn.innerText = "⏳ جاري التثبيت في السحابة...";
-    saveBtn.disabled = true;
+  async function saveMatch() {
+    const btn = document.getElementById('btnSaveMatch');
+    btn.innerText = "⏳ جاري التثبيت في السحابة...";
+    btn.disabled = true;
 
     const newMatch = {
       timestamp: Date.now(),
-      lat: currentLat,
-      lon: currentLon,
-      opponent: document.getElementById('inputOpponent').value.trim() || "مباراة رسمية",
-      stadium: document.getElementById('inputStadium').value.trim() || "الجوهرة المشعة",
-      score: document.getElementById('inputScore').value.trim() || "2 - 1",
-      stand: document.getElementById('inputStand').value.trim() || "المدرج",
-      result: document.getElementById('inputResult').value,
+      opponent: document.getElementById('inOpponent').value.trim() || "مباراة رسمية",
+      stadium: document.getElementById('inStadium').value.trim() || "الجوهرة المشعة",
+      score: document.getElementById('inScore').value.trim() || "2 - 1",
+      stand: document.getElementById('inStand').value.trim() || "المدرج",
+      result: document.getElementById('inResult').value,
       date: new Date().toLocaleDateString('ar-SA'),
       image: capturedBase64
     };
 
     try {
-      if (window.saveMatchToFirestore) {
-        const cloudId = await window.saveMatchToFirestore(newMatch);
-        newMatch.id = cloudId;
+      if (window.saveMatchCloud) {
+        const id = await window.saveMatchCloud(newMatch);
+        newMatch.id = id;
       }
-      let localArchive = JSON.parse(localStorage.getItem(ITTI_STORAGE_KEY) || "[]");
-      localArchive.unshift(newMatch);
-      localStorage.setItem(ITTI_STORAGE_KEY, JSON.stringify(localArchive));
+      let list = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      list.unshift(newMatch);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 
-      alert("🏆 تم تثبيت المباراة في قميص المدرج بنجاح!");
-      resetCapture();
-      window.syncCloudArchive();
+      alert("🏆 تم حفظ المباراة في قميص المدرج بنجاح!");
+      cancelEdit();
+      window.syncFanArchive();
     } catch (e) {
-      let localArchive = JSON.parse(localStorage.getItem(ITTI_STORAGE_KEY) || "[]");
-      localArchive.unshift(newMatch);
-      localStorage.setItem(ITTI_STORAGE_KEY, JSON.stringify(localArchive));
-      resetCapture();
-      loadLocalArchive();
+      let list = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      list.unshift(newMatch);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      cancelEdit();
+      renderFeed(list);
     } finally {
-      saveBtn.innerText = "☁️ تثبيت المباراة في قميص المدرج";
-      saveBtn.disabled = false;
+      btn.innerText = "☁️ حفظ المباراة في قميص المدرج";
+      btn.disabled = false;
     }
   }
 
-  async function deleteSingleMatch(index, docId) {
-    const enteredPin = prompt("🔒 إدخال الرمز السري لحذف المباراة:");
-    if (enteredPin !== OWNER_PIN) {
+  async function deleteMatch(index, docId) {
+    const pin = prompt("🔒 إدخال الرمز السري لحذف المباراة:");
+    if (pin !== OWNER_PIN) {
       alert("⚠️ الرمز غير صحيح!");
       return;
     }
+    if (!confirm("هل أنت متأكد من حذف هذه المباراة من سجل المدرج؟")) return;
 
-    if (!confirm("هل أنت متأكد من حذف هذه المباراة نهائياً؟")) return;
+    let list = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    list.splice(index, 1);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 
-    let localArchive = JSON.parse(localStorage.getItem(ITTI_STORAGE_KEY) || "[]");
-    localArchive.splice(index, 1);
-    localStorage.setItem(ITTI_STORAGE_KEY, JSON.stringify(localArchive));
-
-    if (docId && window.deleteSingleMatchEntry) {
-      await window.deleteSingleMatchEntry(docId);
+    if (docId && window.deleteMatchCloud) {
+      await window.deleteMatchCloud(docId);
     }
 
-    renderMatchesCards(localArchive);
-    window.syncCloudArchive();
+    renderFeed(list);
+    window.syncFanArchive();
   }
 
-  window.syncCloudArchive = async function() {
-    if (window.loadMatchesFromFirestore) {
-      const cloudMatches = await window.loadMatchesFromFirestore();
-      if (cloudMatches && cloudMatches.length > 0) {
-        localStorage.setItem(ITTI_STORAGE_KEY, JSON.stringify(cloudMatches));
-        renderMatchesCards(cloudMatches);
+  window.syncFanArchive = async function() {
+    if (window.loadMatchesCloud) {
+      const data = await window.loadMatchesCloud();
+      if (data && data.length > 0) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        renderFeed(data);
         return;
       }
     }
-    loadLocalArchive();
+    const local = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    renderFeed(local);
   };
 
-  function loadLocalArchive() {
-    const archive = JSON.parse(localStorage.getItem(ITTI_STORAGE_KEY) || "[]");
-    renderMatchesCards(archive);
-  }
+  function renderFeed(list) {
+    const feed = document.getElementById('matchesFeed');
+    feed.innerHTML = "";
 
-  function renderMatchesCards(archive) {
-    markersGroup.clearLayers();
-    if (routePolyline) map.removeLayer(routePolyline);
+    document.getElementById('statTotalMatches').innerText = list.length;
+    document.getElementById('feedCount').innerText = `${list.length} مباراة`;
 
-    const scrollContainer = document.getElementById('archiveScroll');
-    scrollContainer.innerHTML = "";
+    const wins = list.filter(m => m.result && m.result.includes('فوز')).length;
+    document.getElementById('statTotalWins').innerText = wins;
 
-    document.getElementById('archiveTotal').innerText = `(${archive.length})`;
-    document.getElementById('statMatches').innerText = archive.length;
+    const rate = list.length > 0 ? Math.round((wins / list.length) * 100) : 100;
+    document.getElementById('statLuckRate').innerText = `${rate}%`;
 
-    const wins = archive.filter(m => m.result && m.result.includes('فوز')).length;
-    document.getElementById('statWins').innerText = wins;
-
-    const winRate = archive.length > 0 ? Math.round((wins / archive.length) * 100) : 100;
-    document.getElementById('statRate').innerText = `${winRate}%`;
-
-    if (archive.length === 0) {
-      scrollContainer.innerHTML = `<div style="font-size:0.75rem; color:var(--muted); padding:10px;">لا توجد مباريات مسجلة حالياً. وثّق حضورك القادم!</div>`;
+    if (list.length === 0) {
+      feed.innerHTML = `
+        <div style="text-align:center; padding:30px 10px; color:var(--muted); font-size:0.8rem; border:1px dashed var(--border); border-radius:12px;">
+          لم توثق أي مباراة بالقميص حتى الآن.<br>اضغط على الزر الذهبي بالأعلى لتوثيق مباراتك الأولى! 🟡⚫
+        </div>`;
       return;
     }
 
-    const pathCoordinates = archive.map(item => [item.lat, item.lon]);
-    if (pathCoordinates.length > 1) {
-      routePolyline = L.polyline(pathCoordinates, {
-        color: '#f5c400',
-        weight: 3.5,
-        opacity: 0.85,
-        dashArray: '6, 8'
-      }).addTo(map);
-    }
-
-    archive.forEach((item, index) => {
-      const pinIcon = L.divIcon({
-        className: 'custom-pin',
-        html: `<div style="background:#f5c400; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow:0 0 10px #f5c400;"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-      });
-
-      const marker = L.marker([item.lat, item.lon], { icon: pinIcon }).addTo(markersGroup);
-      marker.bindPopup(`
-        <div style="text-align:right; font-family:'Cairo',sans-serif; color:#000;">
-          <img src="${item.image}" style="width:100%; height:90px; object-fit:cover; border-radius:6px; margin-bottom:4px;">
-          <b style="font-size:0.85rem;">الاتحاد ضد ${item.opponent}</b><br>
-          <small style="color:#666;">🏟️ ${item.stadium} • النتيجة: ${item.score}</small>
-          <div style="margin-top:6px; text-align:center;">
-            <button onclick="deleteSingleMatch(${index}, '${item.id || ''}')" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer;">🔒 🗑️ حذف</button>
+    list.forEach((item, idx) => {
+      const isWin = item.result && item.result.includes('فوز');
+      const card = document.createElement('div');
+      card.className = "match-card";
+      card.innerHTML = `
+        <button class="match-delete-btn" onclick="deleteMatch(${idx}, '${item.id || ''}')">✕</button>
+        <img class="match-card-photo" src="${item.image}" alt="مباراة الاتحاد">
+        <div class="match-card-body">
+          <div class="match-versus-row">
+            <div>الاتحاد ضد ${item.opponent}</div>
+            <div class="match-score-badge" style="color:${isWin ? 'var(--win)' : 'var(--itti-yellow)'};">${item.score}</div>
+          </div>
+          <div class="match-details-row">
+            <span>🏟️ ${item.stadium} (${item.stand})</span>
+            <span>📅 ${item.date}</span>
           </div>
         </div>
-      `);
-
-      const card = document.createElement('div');
-      card.className = "archive-card";
-      card.innerHTML = `
-        <button class="card-delete-btn" onclick="event.stopPropagation(); deleteSingleMatch(${index}, '${item.id || ''}')">✕</button>
-        <img class="archive-thumb" src="${item.image}" alt="${item.opponent}">
-        <div class="archive-info">
-          <div class="archive-loc">ضد ${item.opponent}</div>
-          <div class="archive-date">${item.date} • ${item.score}</div>
-        </div>
       `;
-      card.onclick = () => {
-        map.setView([item.lat, item.lon], 15);
-        marker.openPopup();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
-      scrollContainer.appendChild(card);
+      feed.appendChild(card);
     });
   }
 
-  async function exportTicketVisual() {
-    const targetElement = document.getElementById('matchTicketBox');
+  async function shareTicketCard() {
+    const box = document.getElementById('ticketBox');
     try {
-      const canvas = await html2canvas(targetElement, { scale: 2.5, useCORS: true, backgroundColor: "#08090b" });
+      const canvas = await html2canvas(box, { scale: 2.5, useCORS: true, backgroundColor: "#090b0e" });
       canvas.toBlob(async (blob) => {
         if (!blob) return;
-        const file = new File([blob], `ITTIHAD-MATCH-${Date.now()}.png`, { type: 'image/png' });
+        const file = new File([blob], `ITTIHAD-TICKET-${Date.now()}.png`, { type: 'image/png' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
             title: 'تذكرة مدرج الذهب | الاتحاد',
-            text: `📍 من قلب المدرج: الاتحاد ضد ${document.getElementById('inputOpponent').value || 'الخصم'} 🟡⚫`
+            text: `📍 من قلب المدرج: الاتحاد ضد ${document.getElementById('inOpponent').value || 'الخصم'} 🟡⚫`
           });
         } else {
           const link = document.createElement('a');
-          link.download = `ITTIHAD-MATCH-${Date.now()}.png`;
+          link.download = `ITTIHAD-TICKET-${Date.now()}.png`;
           link.href = canvas.toDataURL('image/png');
           link.click();
-          alert("تم حفظ تذكرة المباراة في الألبوم بجودة عالية!");
+          alert("تم حفظ تذكرة المباراة في ألبوم الصور!");
         }
       }, 'image/png');
     } catch (e) {
-      alert("حدث خطأ أثناء استخراج التذكرة.");
+      alert("حدث خطأ أثناء التصدير.");
     }
   }
 
-  function resetCapture() {
+  function cancelEdit() {
     document.getElementById('cameraDirectInput').value = "";
-    document.getElementById('galleryDirectInput').value = "";
-    document.getElementById('ticketImg').src = "";
+    document.getElementById('ticketPreviewImg').src = "";
     document.getElementById('editSection').style.display = 'none';
-    document.getElementById('captureRow').style.display = 'flex';
-    document.getElementById('archiveSection').style.display = 'flex';
-    map.invalidateSize();
+    document.getElementById('bannerTrigger').style.display = 'flex';
+    document.getElementById('feedHeader').style.display = 'flex';
+    document.getElementById('matchesFeed').style.display = 'flex';
   }
 
-  window.onload = initMap;
+  window.onload = () => {
+    const local = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    renderFeed(local);
+  };
 </script>
 </body>
 </html>
